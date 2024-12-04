@@ -34,12 +34,21 @@
             <h2>Convert MIDI to Arduino Code</h2>
         </header>
 
+        <div class="input-group">
+            <label for="buzzer-pin">Buzzer pin? (Input this if you want a ready-to-run sketch.)</label>
+            <input type="text" id="buzzer-pin">
+        </div>
+        <div class="input-group">
+            <label for="track-name">Track name?</label>
+            <input type="text" id="track-name" value="song">
+        </div>
+
         <div id="file-dropper">
             <div id="file-dropper-text">Click / Drop a MIDI file here</div>
             <input type="file" accept="audio/midi" />
         </div>
 
-        <p id="error"></p>
+
         <select name="tracks" id="tracks"></select>
 
         <div>
@@ -47,11 +56,8 @@
         </div>
 
         <div class="btn-container">
-            <button disabled class="play" id="play-toggle">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"></path>
-                    <path d="M0 0h24v24H0z" fill="none"></path>
-                </svg>
+            <button disabled id="play-toggle">
+                Test MIDI
             </button>
             <button disabled class="download" id="download-btn">
                 Download Sketch
