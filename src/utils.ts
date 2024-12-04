@@ -13,6 +13,9 @@ const saveFile = (filename: string, data: string) => {
 };
 
 const sourceTemplate = cf.template(`\
+#ifndef {{ guard }}
+#define {{ guard }}
+
 const int {{ name }}_notes[{{ length }}][3] = {
     {{ notes }}
 };
@@ -23,6 +26,8 @@ void play_{{ name }}(int buzzer) {
         delay(notes[i][2]);
     }
 }
+
+#endif
 
 {{ optional }}
 `);
@@ -41,7 +46,13 @@ const convertMelody = (arr: Note[], name = 'song', buzzer = '') => {
         .map((note) => `{${freq(note)}, ${d(note)}, ${d(note) + 5}}`)
         .join(',\n    ');
 
-    return sourceTemplate({ notes, name, optional, length: notes.length.toString() }).trim();
+    return sourceTemplate({
+        notes,
+        name,
+        optional,
+        length: arr.length.toString(),
+        guard: name.toUpperCase() + "_H"
+    }).trim();
 }
 
 export { convertMelody, saveFile };
