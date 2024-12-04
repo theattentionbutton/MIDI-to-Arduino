@@ -1,18 +1,20 @@
 {
-  "name": "MIDI-to-Arduino",
+  "name": "midi-2-arduino",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/main.ts",
   "license": "MIT",
   "scripts": {
-    "start": "snowpack dev",
-    "build": "snowpack build"
+    "start": "vite dev",
+    "build": "vite build"
   },
   "dependencies": {
     "@tonejs/midi": "^2.0.27",
     "@tonejs/ui": "^0.1.5",
+    "campfire.js": "^4.0.0-alpha2",
     "tone": "^14.7.77"
   },
   "devDependencies": {
-    "snowpack": "^3.8.6"
+    "typescript": "~5.6.2",
+    "vite": "^6.0.1"
   }
 }
