@@ -3,16 +3,13 @@ import * as Tone from "tone";
 import { convertMelody, saveFile } from "./utils";
 import cf from "campfire.js";
 
-const [playSymbol, stopSymbol] = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg>`,
-    `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"></path><path d="M6 6h12v12H6z"></path></svg>`,
-];
-
 const trackSelect = cf.select('#tracks') as HTMLSelectElement;
 const playToggle = cf.select('#play-toggle') as HTMLButtonElement;
 const output = cf.select("#output-ta") as HTMLTextAreaElement;
 const downloadBtn = cf.select("#download-btn") as HTMLButtonElement;
 const dropperLabel = cf.select("#file-dropper #file-dropper-text") as HTMLDivElement;
+const nameField = cf.select('#track-name') as HTMLInputElement;
+const buzzerPin = cf.select('#buzzer-pin') as HTMLInputElement;
 
 window.addEventListener('DOMContentLoaded', (_) => {
     if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
@@ -38,6 +35,8 @@ window.addEventListener('DOMContentLoaded', (_) => {
             parseFile(file);
         }
     });
+
+    output.value = '';
 })
 
 const updateTracks = (midi: Midi) => {
@@ -65,37 +64,46 @@ const playMidi = async (track: Track) => {
         await Tone.start();
         started = true;
     }
-    const synth = new Tone.Synth().toDestination();
-    track.notes.forEach((note) => {
-        console.log(note);
-        const now = Tone.now();
-        try {
-            synth.triggerAttackRelease(note.name, note.duration, note.time + now);
-        } catch (err) {
-            console.error(err);
+
+    const synth = new Tone.Synth({
+        oscillator: {
+            partialCount: 0,
+            type: 'square',
+            volume: -8
         }
-    });
+    }).toDestination();
+    for (const note of track.notes) {
+        const now = Tone.now();
+        synth.triggerAttackRelease(note.name, note.duration, note.time + now);
+    };
 }
 
 const trackId = () => parseInt(trackSelect.value || '0');
+const playing = new cf.Store(false);
+
+playing.on('update', (v) => playToggle.innerHTML = v ? 'Playing...' : 'Test MIDI');
 
 const parseFile = async (file: File) => {
     const data = await toArrayBuffer(file);
     const midi = new Midi(data);
 
+    const name = nameField.value.trim() || file.name.split('.')[0];
     updateTracks(midi);
     console.log(trackId());
     const notes = midi.tracks[trackId()].notes;
-    const code = convertMelody(notes);
+    const code = convertMelody(notes, name, buzzerPin.value);
     output.value = code;
 
-    const currentFilename = file.name.split(".")[0] + ".ino";
-    downloadBtn.onclick = () => saveFile(currentFilename, code);
+    const filename = name + ".h";
+    downloadBtn.onclick = () => saveFile(filename, code);
 
     playToggle.onclick = async () => {
+        if (playing.value) return;
         console.log('playing', trackId());
         const track = midi.tracks[trackId()];
+        playing.update(true);
         await playMidi(track);
+        setTimeout(() => playing.update(false), track.duration * 1000 + 100);
     }
 
     [downloadBtn, playToggle].forEach(e => e.removeAttribute("disabled"));
