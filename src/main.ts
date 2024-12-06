@@ -75,6 +75,7 @@ const playMidi = async (track: Track) => {
     for (const note of track.notes) {
         const now = Tone.now();
         synth.triggerAttackRelease(note.name, note.duration, note.time + now);
+        console.log(note.name, Math.round(note.duration * 1000));
     };
 }
 

@@ -16,14 +16,18 @@ const sourceTemplate = cf.template(`\
 #ifndef {{ guard }}
 #define {{ guard }}
 
-const int {{ name }}_notes[{{ length }}][2] = {
+const int {{ name }}_notes[{{ length }}][3] = {
     {{ notes }}
 };
 
 void play_{{ name }}(int buzzer) {
     for (int i = 0; i < sizeof({{ name }}_notes) / sizeof(* {{ name }}_notes); i++) {
-        tone(buzzer, {{ name }}_notes[i][0], {{ name }}_notes[i][1]);
-        delay({{ name }}_notes[i][1] + 10);
+        if ({{ name }}_notes[2]) {
+            delay({{ name }}_notes[i][2]);
+        }
+        tone(buzzer, {{ name }}_notes[i][0]);
+        delay({{ name }}_notes[i][1]);
+        noTone(buzzer);
     }
 }
 
@@ -40,11 +44,15 @@ void loop() {}`
 const convertMelody = (arr: Note[], name = 'song', buzzer = '') => {
     const freq = (note: Note) => Math.round(Frequency(note.name).toFrequency());
     const d = (note: Note) => Math.round(note.duration * 1000);
+    const start = (note: Note) => Math.round(note.time * 1000);
     const optional = buzzer ? runtimeTpl({ buzzer }) : '';
 
-    const notes = arr
-        .map((note) => `{${freq(note)}, ${d(note)}}`)
-        .join(',\n    ');
+    let lastNoteEndTime = 0;
+    const notes = arr.map(note => {
+        const gap = start(note) - lastNoteEndTime;
+        lastNoteEndTime = start(note) + d(note);
+        return `{${freq(note)}, ${d(note)}, ${gap > 0 ? gap : 0}}`;
+    }).join(',\n    ');
 
     return sourceTemplate({
         notes,
