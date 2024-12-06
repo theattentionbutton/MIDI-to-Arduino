@@ -39,7 +39,7 @@ void loop() {}`
 
 const convertMelody = (arr: Note[], name = 'song', buzzer = '') => {
     const freq = (note: Note) => Math.round(Frequency(note.name).toFrequency());
-    const d = (note: Note) => note.duration * 1000;
+    const d = (note: Note) => Math.round(note.duration * 1000);
     const optional = buzzer ? runtimeTpl({ buzzer }) : '';
 
     const notes = arr
