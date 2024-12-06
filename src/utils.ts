@@ -16,14 +16,14 @@ const sourceTemplate = cf.template(`\
 #ifndef {{ guard }}
 #define {{ guard }}
 
-const int {{ name }}_notes[{{ length }}][3] = {
+const int {{ name }}_notes[{{ length }}][2] = {
     {{ notes }}
 };
 
 void play_{{ name }}(int buzzer) {
     for (int i = 0; i < sizeof({{ name }}_notes) / sizeof(* {{ name }}_notes); i++) {
-        tone(buzzer, notes[i][0], notes[i][1]);
-        delay(notes[i][2]);
+        tone(buzzer, {{ name }}_notes[i][0], {{ name }}_notes[i][1]);
+        delay({{ name }}_notes[i][1] + 10);
     }
 }
 
@@ -43,7 +43,7 @@ const convertMelody = (arr: Note[], name = 'song', buzzer = '') => {
     const optional = buzzer ? runtimeTpl({ buzzer }) : '';
 
     const notes = arr
-        .map((note) => `{${freq(note)}, ${d(note)}, ${d(note) + 5}}`)
+        .map((note) => `{${freq(note)}, ${d(note)}}`)
         .join(',\n    ');
 
     return sourceTemplate({
